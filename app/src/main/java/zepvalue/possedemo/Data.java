@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -42,7 +43,6 @@ public class Data {
         }
         return instance;
     }
-
 
     String dummy;
 
@@ -144,8 +144,17 @@ public class Data {
         }
     }
 
-    public String getProgrammersData() {
-        return programmersData;
+    public ArrayList<ArrayList<String>> getProgrammersData()
+    {
+        ArrayList<ArrayList<String>> programmers = new ArrayList<ArrayList<String>>(5);
+        programmers.add(names);
+        programmers.add(favColors);
+        programmers.add(ages);
+        programmers.add(weights);
+        programmers.add(phones);
+        programmers.add(isArtists);
+
+        return programmers;
     }
 
 }

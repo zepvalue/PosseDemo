@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         phoneValTV = (TextView) findViewById(R.id.phone_value_text_view);
         isArtistValTV = (TextView) findViewById(R.id.isArtist_value_text_view);
         locationValTV = (TextView) findViewById(R.id.location_value_text_view);
-
+        /*********************************************************************/
 
        //class Data SINGLETON
         Data store = Data.getInstance();
@@ -78,8 +78,6 @@ public class MainActivity extends AppCompatActivity {
         listDataHeader.add(store.names.get(4));
         listDataHeader.add(store.names.get(5));
         listDataHeader.add(store.names.get(6));
-
-
 
         // Adding child data
         List<String> federico = new ArrayList<String>();
