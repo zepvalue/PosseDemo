@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         /*******************VIEWS INITIALIZATION***********************/
-        nameValTV = (TextView) findViewById(R.id.name_value_text_view);git
+        nameValTV = (TextView) findViewById(R.id.name_value_text_view);
         favColorValTV = (TextView) findViewById(R.id.favColor_value_text_view);
         ageValTV = (TextView) findViewById(R.id.age_value_text_view);
         weightValTV = (TextView) findViewById(R.id.weight_value_text_view);
