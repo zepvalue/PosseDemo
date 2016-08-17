@@ -11,4 +11,15 @@
         android:layout_height="match_parent" >
     </ExpandableListView>
 
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="20dp"-->
+        <!--android:id="@+id/name_value_text_view"-->
+        <!--android:text="value name"-->
+        <!--android:layout_alignBaseline="@+id/name_label_text_view"-->
+        <!--android:layout_alignBottom="@+id/name_label_text_view"-->
+        <!--android:layout_alignLeft="@+id/age_value_text_view"-->
+        <!--android:layout_alignStart="@+id/age_value_text_view" />-->
+
 </LinearLayout>

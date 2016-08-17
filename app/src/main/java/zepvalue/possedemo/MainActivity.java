@@ -6,12 +6,13 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    /*************VIEWS************/
+
     private TextView nameValTV;
     private TextView favColorValTV;
     private TextView ageValTV;
@@ -19,21 +20,23 @@ public class MainActivity extends AppCompatActivity {
     private TextView phoneValTV;
     private TextView isArtistValTV;
     private TextView locationValTV;
-    /******************************/
 
-    /**********EXPANDABLE LIST******************/
+    private ArrayList<Programmer> programmer ;
+    private ArrayList<Location> location   ;
+    private ArrayList<Platform> platform   ;
+
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
-    /*******************************************/
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*******************VIEWS INITIALIZATION***********************/
+
         nameValTV = (TextView) findViewById(R.id.name_value_text_view);
         favColorValTV = (TextView) findViewById(R.id.favColor_value_text_view);
         ageValTV = (TextView) findViewById(R.id.age_value_text_view);
@@ -41,59 +44,60 @@ public class MainActivity extends AppCompatActivity {
         phoneValTV = (TextView) findViewById(R.id.phone_value_text_view);
         isArtistValTV = (TextView) findViewById(R.id.isArtist_value_text_view);
         locationValTV = (TextView) findViewById(R.id.location_value_text_view);
-        /*********************************************************************/
 
-       //class Data SINGLETON
-        Data store = Data.getInstance();
+        DataManager store = DataManager.getInstance();
 
-        //This might not be needed to be here
         store.addData(store.loadJSONFromAsset(this));
+        programmer = store.getListProgrammer();
+        location   = store.getListLocation();
+        platform   = store.getListPlatform();
 
-        Programmer programmer = new Programmer(store.names.get(0),store.favColors.get(0),
-                                               store.ages.get(0), store.weights.get(0),
-                                               store.phones.get(0),store.isArtists.get(0));
-
-
-        // get the listview
         expListView = (ExpandableListView) findViewById(R.id.explistView);
 
-        // preparing list data
-        prepareListData(store);
+        prepareListData();
 
         listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
 
-        // setting list adapter
         expListView.setAdapter(listAdapter);
     }
 
-    private void prepareListData(Data store) {
+    private void prepareListData() {
         listDataHeader = new ArrayList<String>();
         listDataChild = new HashMap<String, List<String>>();
 
-        // Adding child data
-        listDataHeader.add(store.names.get(0));
-        listDataHeader.add(store.names.get(1));
-        listDataHeader.add(store.names.get(2));
-        listDataHeader.add(store.names.get(3));
-        listDataHeader.add(store.names.get(4));
-        listDataHeader.add(store.names.get(5));
-        listDataHeader.add(store.names.get(6));
+        for (int i = 0; i < programmer.size(); i++)
+            listDataHeader.add(programmer.get(i).getName());
 
-        // Adding child data
-        List<String> federico = new ArrayList<String>();
-        federico.add("Platform: "        + store.platforms.get(0));
-        federico.add("Favourite Color: " + store.favColors.get(0));
-        federico.add("Age: "             + store.ages.get(0));
-        federico.add("Weight: "          + store.weights.get(0));
-        federico.add("Phone: "           + store.phones.get(0));
-        federico.add("IsArtist: "        + store.isArtists.get(0));
-        federico.add("Location: "        + store.addresses.get(0));
+        String [] users = new String[programmer.size()];
 
-        List<String> user2 = new ArrayList<String>();
-        List<String> user3 = new ArrayList<String>();
+        String out;
+        String city;
+        String pla;
 
-        listDataChild.put(listDataHeader.get(0), federico); // Header, Child data
-        listDataChild.put(listDataHeader.get(1), user2);
-        listDataChild.put(listDataHeader.get(2), user3);
+        int l, j , k;
+
+        for(l = 0; l<location.size();l++)
+        {
+            city = "Location: " + location.get(l).getAddress()+ "\n";
+
+            for( k = 0 ; k< platform.size();k++)
+            {
+                pla = ("Platform: " + platform.get(k).getName()+ "\n");
+
+                for (j = k; j < platform.size(); j++)
+                {
+                    users[j] = ("Favourite Color: " + programmer.get(j).getFavColor() + "\n"
+                            + "Age: "             + programmer.get(j).getAge()      + "\n"
+                            + "Weight: "          + programmer.get(j).getWeight()   + "\n"
+                            + "Phone: "           + programmer.get(j).getPhone()    + "\n"
+                            + "IsArtist: "        + programmer.get(j).getIsArtist() + "\n");
+
+                    out = city + pla + users[j] ;
+
+                   listDataChild.put(listDataHeader.get(j), new ArrayList<String>(Arrays.asList(out.split("\n"))));
+                    //NOW I NEED TO LIMIT THE LOOP FOR EACH PART
+                }
+            }
+        }
     }
 }

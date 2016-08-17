@@ -10,8 +10,6 @@ public class Location {
     private String postalCode;
     private String country;
 
-    private String address;
-
     public Location(String locality, String region, String postalCode,String country)
     {
         this.locality = locality;
@@ -20,21 +18,9 @@ public class Location {
         this.postalCode = postalCode;
     }
 
-    public Location(String address)
+    public String getAddress()
     {
-        this.address= address;
+        return locality + ", " +region + ", " + postalCode + ", " + country;
     }
 
-    public Location() {
-    }
-
-
-    public String getFormattedLocation()
-    {
-        return locality + ", " + region+ ", "  + postalCode+ ", "  + country;
-    }
-
-    public String getAddress() {
-        return address;
-    }
 }
