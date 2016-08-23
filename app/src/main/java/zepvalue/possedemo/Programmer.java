@@ -1,10 +1,16 @@
 package zepvalue.possedemo;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 /**
  * Created by zepvalue on 8/14/2016.
  */
-public class Programmer {
+public class Programmer implements Serializable {
 
+    private static final long serialVersionUID = 7043342470139187758L;
     private String name;
     private String favColor;
     private String age;
@@ -20,6 +26,8 @@ public class Programmer {
         this.weight  = weight;
         this.phone = phone;
         this.isArtist = isArtist;
+
+
     }
 
     public String getName() {
@@ -46,8 +54,18 @@ public class Programmer {
         return isArtist;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    private Programmer programmer;
+
+    private void writeObject(ObjectOutputStream aOutputStream) throws IOException {
+        //perform the default serialization for all non-transient, non-static fields
+        aOutputStream.defaultWriteObject();
     }
 
+    private void readObject(ObjectInputStream aInputStream
+    ) throws ClassNotFoundException, IOException {
+        //always perform the default de-serialization first
+        aInputStream.defaultReadObject();
+        //make defensive copy of the mutable Date field
+        programmer = new Programmer(this.name,this.favColor,this.age,this.weight,this.phone,this.isArtist);
+    }
 }

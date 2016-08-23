@@ -1,103 +1,123 @@
 package zepvalue.possedemo;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
-import android.widget.ExpandableListView;
-import android.widget.TextView;
+import android.support.v7.app.AppCompatActivity;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener
+{
 
+    private GoogleMap map;
+    private DataManager store = null;
+    public static String extraMarkerTitle = "extraMarkerTitle";
+    public static String extraServices = "extraServices";
+    public static String extramarkerPosition = "extraMarkerPosition";
 
-    private TextView nameValTV;
-    private TextView favColorValTV;
-    private TextView ageValTV;
-    private TextView weightValTV;
-    private TextView phoneValTV;
-    private TextView isArtistValTV;
-    private TextView locationValTV;
+    private ArrayList<Location> locations = null;
 
-    private ArrayList<Programmer> programmer ;
-    private ArrayList<Location> location   ;
-    private ArrayList<Platform> platform   ;
-
-    ExpandableListAdapter listAdapter;
-    ExpandableListView expListView;
-    List<String> listDataHeader;
-    HashMap<String, List<String>> listDataChild;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        store = DataManager.getInstance(this);
+        locations = store.locations;
         setContentView(R.layout.activity_main);
 
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        nameValTV = (TextView) findViewById(R.id.name_value_text_view);
-        favColorValTV = (TextView) findViewById(R.id.favColor_value_text_view);
-        ageValTV = (TextView) findViewById(R.id.age_value_text_view);
-        weightValTV = (TextView) findViewById(R.id.weight_value_text_view);
-        phoneValTV = (TextView) findViewById(R.id.phone_value_text_view);
-        isArtistValTV = (TextView) findViewById(R.id.isArtist_value_text_view);
-        locationValTV = (TextView) findViewById(R.id.location_value_text_view);
-
-        DataManager store = DataManager.getInstance();
-
-        store.addData(store.loadJSONFromAsset(this));
-        programmer = store.getListProgrammer();
-        location   = store.getListLocation();
-        platform   = store.getListPlatform();
-
-        expListView = (ExpandableListView) findViewById(R.id.explistView);
-
-        prepareListData();
-
-        listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
-
-        expListView.setAdapter(listAdapter);
+        MapFragment fragmentMap = MapFragment.newInstance();
+        fragmentTransaction.add(R.id.container, fragmentMap);
+        fragmentTransaction.commit();
+        fragmentMap.getMapAsync(this);
     }
 
-    private void prepareListData() {
-        listDataHeader = new ArrayList<String>();
-        listDataChild = new HashMap<String, List<String>>();
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+        float zoom = 2;
+        int i;
 
-        for (int i = 0; i < programmer.size(); i++)
-            listDataHeader.add(programmer.get(i).getName());
+        for(i=0;i<this.locations.size();i++) {
+            map.addMarker(new MarkerOptions().position(getLocationFromAddress(this, this.locations.get(i).getAddress())).title(this.locations.get(i).getAddress()));
+        }
+        map.moveCamera(CameraUpdateFactory.newLatLng(getLocationFromAddress(this, this.locations.get(0).getAddress())));
+        map.animateCamera(CameraUpdateFactory.zoomTo(zoom), 1000, null);
+        map.setOnMarkerClickListener(this);
+    }
 
-        String [] users = new String[programmer.size()];
+    public LatLng getLocationFromAddress(Context context, String strAddress) {
 
-        String out;
-        String city;
-        String pla;
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
 
-        int l, j , k;
+        try {
+            address = coder.getFromLocationName(strAddress, 5);
 
-        for(l = 0; l<location.size();l++)
+            if (address == null) {
+                return null;
+            }
+            Address location = address.get(0);
+            location.getLatitude();
+            location.getLongitude();
+
+            p1 = new LatLng(location.getLatitude(), location.getLongitude() );
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+        }
+
+        return p1;
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        String markerTitle = marker.getTitle();
+        Location location = this.getLocationByAddress(markerTitle);
+        ArrayList<Service> services = location.getServices();
+        LatLng markerPosition = marker.getPosition();
+
+        Intent serviceIntent = new Intent(this, ServicesChooserActivity.class);
+        Intent detailsIntent = new Intent(this, DetailsFragment.class);
+
+        detailsIntent.putExtra("extraLocation", location);
+
+        serviceIntent.putExtra(extraServices, services);
+        detailsIntent.putExtra(extramarkerPosition, markerPosition);
+        startActivity(serviceIntent);
+        return false;
+    }
+
+    public Location getLocationByAddress(String address)
+    {
+        for(int i = 0; i< locations.size();i++)
         {
-            city = "Location: " + location.get(l).getAddress()+ "\n";
-
-            for( k = 0 ; k< platform.size();k++)
+            Location l = locations.get(i);
+            if(l.getAddress().equalsIgnoreCase(address))
             {
-                pla = ("Platform: " + platform.get(k).getName()+ "\n");
-
-                for (j = k; j < platform.size(); j++)
-                {
-                    users[j] = ("Favourite Color: " + programmer.get(j).getFavColor() + "\n"
-                            + "Age: "             + programmer.get(j).getAge()      + "\n"
-                            + "Weight: "          + programmer.get(j).getWeight()   + "\n"
-                            + "Phone: "           + programmer.get(j).getPhone()    + "\n"
-                            + "IsArtist: "        + programmer.get(j).getIsArtist() + "\n");
-
-                    out = city + pla + users[j] ;
-
-                   listDataChild.put(listDataHeader.get(j), new ArrayList<String>(Arrays.asList(out.split("\n"))));
-                    //NOW I NEED TO LIMIT THE LOOP FOR EACH PART
-                }
+                return l;
             }
         }
+        return null;
     }
 }

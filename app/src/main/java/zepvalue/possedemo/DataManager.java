@@ -1,11 +1,11 @@
 package zepvalue.possedemo;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -14,38 +14,30 @@ import java.util.ArrayList;
  * Created by zepvalue on 8/14/2016.
  */
 public class DataManager {
-    ArrayList<Programmer> listProgrammer = new ArrayList<>();
-    ArrayList<Location> listLocation   = new ArrayList<>();
-    ArrayList<Platform> listPlatform   = new ArrayList<>();
 
-    String name;
-    String age;
-    String favColor;
-    String weight;
-    String phone;
-    String isArtist;
-    String locality;
-    String region;
-    String postalCode;
-    String country;
+
+
     private static DataManager instance = null;
 
+    ArrayList<Location> locations = null;
 
-    protected DataManager() {
+    private DataManager() {
         // Exists only to defeat instantiation.
     }
 
-    public static DataManager getInstance() {
+    public static DataManager getInstance(Context context) {
         if(instance == null) {
             instance = new DataManager();
         }
+        String jsonString = instance.loadJSONFromAsset(context);
+        instance.addData(jsonString);
         return instance;
     }
 
-    public String loadJSONFromAsset(Context c) {
+    public String loadJSONFromAsset(Context context) {
         String json = null;
         try {
-            InputStream is = c.getAssets().open("android_model_challenge.json");
+            InputStream is = context.getAssets().open("android_model_challenge.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
@@ -60,69 +52,62 @@ public class DataManager {
 
     public void addData(String jsonString) {
         JSONObject json = null;
-        int counterProgrammer = 0;
-        int counterPlatform   = 0;
-        int counterLocation   = 0;
+        int counterProgrammer =0;
         try {
             json = new JSONObject(jsonString);
             JSONObject response = json.getJSONObject("response");
-            JSONArray locations = response.getJSONArray("locations");
 
+            JSONArray locations = response.getJSONArray("locations");
+            ArrayList<Location> listLocation = new ArrayList<>();
                 for (int i = 0; i < locations.length(); i++) {
 
                     JSONObject location = locations.getJSONObject(i);
 
-                    locality = location.optString("locality");
-                    region = location.optString("region");
-                    postalCode = location.optString("postal_code");
-                    country = location.optString("country");
+                    String locality = location.optString("locality");
+                    String region = location.optString("region");
+                    String postalCode = location.optString("postal_code");
+                    String country = location.optString("country");
 
-                    listLocation.add(i, new Location(locality, region, postalCode, country));
-                    counterLocation++;
+                    Location newLocation = new Location(locality, region, postalCode, country, null);
+                    listLocation.add(i, newLocation);
+
                     JSONArray services = location.getJSONArray("services");
+                    ArrayList<Service> listServices = new ArrayList<>();
 
                     for (int j = 0; j < services.length(); j++) {
-                        JSONObject platform = services.getJSONObject(j);
+                        JSONObject service = services.getJSONObject(j);
 
-                        String platformName = platform.optString("platform");
+                        String platformName = service.optString("platform");
 
-                        listPlatform.add(counterPlatform ,new Platform(platformName));
-                        counterPlatform++;
+                        Service newService = new Service(platformName, null);
+                        listServices.add(j, newService);
 
-                        JSONArray programmers = platform.getJSONArray("programmers");
+                        JSONArray programmers = service.getJSONArray("programmers");
+                        ArrayList<Programmer> listProgrammer = new ArrayList<>();
+
                         for (int k = 0; k < programmers.length(); k++)
                         {
                             JSONObject programmersObj = programmers.getJSONObject(k);
 
-                            name = programmersObj.optString("name");
-                            favColor = programmersObj.optString("favorite_color");
-                            age = programmersObj.optString("age");
-                            weight = programmersObj.optString("weight");
-                            phone = programmersObj.optString("phone");
-                            isArtist = programmersObj.optString("is_artist");
+                            String name = programmersObj.optString("name");
+                            String favColor = programmersObj.optString("favorite_color");
+                            String age = programmersObj.optString("age");
+                            String weight = programmersObj.optString("weight");
+                            String phone = programmersObj.optString("phone");
+                            String isArtist = programmersObj.optString("is_artist");
 
-                            listProgrammer.add(counterProgrammer , new Programmer(name, favColor, age, weight, phone, isArtist));
-                            counterProgrammer++;
+                            Programmer newProgrammer = new Programmer(name, favColor, age, weight, phone, isArtist);
+                            listProgrammer.add(k, newProgrammer);
                         }
+                        newService.setProgrammers(listProgrammer);
                     }
+                    newLocation.setServices(listServices);
                 }
+            this.locations = listLocation;
+
         } catch (JSONException e) {
 
             e.printStackTrace();
         }
     }
-
-
-    public ArrayList<Location> getListLocation() {
-        return listLocation;
-    }
-
-    public ArrayList<Platform> getListPlatform() {
-        return listPlatform;
-    }
-
-    public ArrayList<Programmer> getListProgrammer() {
-        return listProgrammer;
-    }
-
 }
